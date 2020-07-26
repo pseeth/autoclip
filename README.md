@@ -1,6 +1,6 @@
 # AutoClip: Adaptive Gradient Clipping
 
-This repository accompanies the forthcoming paper:
+This repository accompanies the forthcoming [paper](autoclip.pdf):
 
 > Prem Seetharaman, Gordon Wichern, Bryan Pardo, Jonathan Le Roux. "AutoClip: Adaptive Gradient Clipping for Source Separation Networks." 2020 IEEE 30th International Workshop on Machine Learning for Signal Processing (MLSP). IEEE, 2020.
 
