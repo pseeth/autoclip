@@ -12,8 +12,7 @@ Soon it will come as a Python package that can be installed and attached to a tr
 
 ## Presentation
 
-This work was presented at MLSP2020 in a special session. If you missed my talk, no worries, there's a pandemic happening so it's recorded! Here it is: 
-https://share.descript.com/view/18725e02-95fe-4fb0-b32d-26c63617d482.
+This work was presented at MLSP2020 in a special session. If you missed my talk, no worries, there's a pandemic happening so it's recorded! [Here it is](https://share.descript.com/view/18725e02-95fe-4fb0-b32d-26c63617d482).
 
 ## Citation
 ```
