@@ -1,6 +1,6 @@
 # AutoClip: Adaptive Gradient Clipping
 
-This repository accompanies the forthcoming [paper](https://arxiv.org/abs/2007.14469):
+This repository accompanies the [paper](https://arxiv.org/abs/2007.14469):
 
 > Prem Seetharaman, Gordon Wichern, Bryan Pardo, Jonathan Le Roux. "AutoClip: Adaptive Gradient Clipping for Source Separation Networks." 2020 IEEE 30th International Workshop on Machine Learning for Signal Processing (MLSP). IEEE, 2020.
 
@@ -10,6 +10,10 @@ Soon it will come as a Python package that can be installed and attached to a tr
 ## Abstract
 > Clipping the gradient is a known approach to improving gradient descent, but requires hand selection of a clipping threshold hyperparameter. We present AutoClip, a simple method for automatically and adaptively choosing a gradient clipping threshold, based on the history of gradient norms observed during training. Experimental results show that applying AutoClip results in improved generalization performance for audio source separation networks. Observation of the training dynamics of a separation network trained with and without AutoClip show that AutoClip guides optimization into smoother parts of the loss landscape. AutoClip is very simple to implement and can be integrated readily into a variety of applications across multiple domains.
 
+## Presentation
+
+This work was presented at MLSP2020 in a special session. If you missed my talk, no worries, there's a pandemic happening so it's recorded! Here it is: 
+https://share.descript.com/view/18725e02-95fe-4fb0-b32d-26c63617d482.
 
 ## Citation
 ```
