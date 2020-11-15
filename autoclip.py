@@ -1,6 +1,6 @@
 import numpy as np
 import torch
-from enum import Enum
+from ignite.engine import EventEnum
 
 def _get_grad_norm(model):
     total_norm = 0
@@ -13,7 +13,7 @@ def _get_grad_norm(model):
 
 # written for pytorch ignite
 # fire this on backwards pass
-class BackwardsEvents(Enum):
+class BackwardsEvents(EventEnum):
     BACKWARDS_COMPLETED = 'backwards_completed'
 
 def add_autoclip_gradient_handler(engine, model, clip_percentile):
