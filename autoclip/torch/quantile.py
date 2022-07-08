@@ -9,7 +9,7 @@ class QuantileClip(Clipper):
         self,
         parameters: Iterator[torch.nn.parameter.Parameter],
         clip_quantile: float = 0.9,
-        history_length: int = 500,
+        history_length: int = 1000,
         global_threshold: bool = False,
     ) -> None:
         self.global_threshold = global_threshold
