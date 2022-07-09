@@ -5,9 +5,9 @@ Pytorch and tensorflow implementations (and variations) of the AutoClip gradient
 
 ## About
 
-While training your model, AutoClip keeps a running history of all of your model's gradient magnitudes. Using these, the gradient clipper can adaptively clamp outlier gradient values before the optimizer of your choice.
+While training your model, AutoClip keeps a running history of all of your model's gradient magnitudes. Using these, the gradient clipper can adaptively clamp outlier gradient values before they reach the optimizer of your choice.
 
-While AutoClip is great as a preventative measure against exploding gradients, it also speeds up training time, and encourages the optimizer to find better optimal models. At an intuitive level, AutoClip compensates for the stochastic nature of training over batches.
+While AutoClip is great as a preventative measure against exploding gradients, it also speeds up training time, and encourages the optimizer to find more optimal models. At an intuitive level, AutoClip compensates for the stochastic nature of training over batches, regularizing training effects.
 
 ## Installation
 
@@ -15,7 +15,7 @@ AutoClip is listed on pypi. To install AutoClip simply run the following command
 ```
 pip install autoclip
 ```
-and the `autoclip` package will be installed in your currently active enviroment.
+and the `autoclip` package will be installed in your currently active environment.
 
 ## Torch API
 
@@ -70,7 +70,7 @@ Keep in mind that just like a torch optimizer this will error if you give the cl
 
 ## Tensorflow
 `autoclip`'s tensorflow API does not currently have feature parity with the torch API (If you want to change this, feel free to [contribute](#2)).
-The tensorflow API currently only supports the original AutoClip algorithm, and does not support checkpointing. Below is a short example:
+As it is, the tensorflow API currently only supports the original AutoClip algorithm, and does not support checkpointing. Below is a short example:
 ```python
 import tensorflow as tf
 from autoclip.tf import QuantileClip
