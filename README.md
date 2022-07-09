@@ -1,39 +1,104 @@
-# AutoClip: Adaptive Gradient Clipping
-
-This repository accompanies the [paper](https://arxiv.org/abs/2007.14469):
+# AutoClip
+Pytorch and tensorflow implementations (and variations) of the AutoClip gradient smoothing procedure from [Seetharaman et al](https://arxiv.org/abs/2007.14469).
 
 > Prem Seetharaman, Gordon Wichern, Bryan Pardo, Jonathan Le Roux. "AutoClip: Adaptive Gradient Clipping for Source Separation Networks." 2020 IEEE 30th International Workshop on Machine Learning for Signal Processing (MLSP). IEEE, 2020.
 
-At the moment it contains a [sample implementation of AutoClip](autoclip.py) that can be integrated into an ML project based on PyTorch easily.
-Soon it will come as a Python package that can be installed and attached to a training script more easily.
+## About
 
-## Abstract
-> Clipping the gradient is a known approach to improving gradient descent, but requires hand selection of a clipping threshold hyperparameter. We present AutoClip, a simple method for automatically and adaptively choosing a gradient clipping threshold, based on the history of gradient norms observed during training. Experimental results show that applying AutoClip results in improved generalization performance for audio source separation networks. Observation of the training dynamics of a separation network trained with and without AutoClip show that AutoClip guides optimization into smoother parts of the loss landscape. AutoClip is very simple to implement and can be integrated readily into a variety of applications across multiple domains.
+While training your model, AutoClip keeps a running history of all of your model's gradient magnitudes. Using these, the gradient clipper can adaptively clamp outlier gradient values before the optimizer of your choice.
 
-## Presentation
+While AutoClip is great as a preventative measure against exploding gradients, it also speeds up training time, and encourages the optimizer to find better optimal models. At an intuitive level, AutoClip compensates for the stochastic nature of training over batches.
 
-This work was presented at MLSP2020 in a special session. If you missed my talk, no worries, there's a pandemic happening so it's recorded! [Here it is](https://share.descript.com/view/18725e02-95fe-4fb0-b32d-26c63617d482).
+## Installation
 
-## Citation
+AutoClip is listed on pypi. To install AutoClip simply run the following command
 ```
-@inproceedings{seetharaman2020autoclip,
-  title={AutoClip: Adaptive Gradient Clipping for Source Separation Networks},
-  author={Seetharaman, Prem, and Wichern, Gordon, and Pardo, Bryan, and Le Roux, Jonathan},
-  booktitle={2020 IEEE 30th International Workshop on Machine Learning for Signal Processing (MLSP)},
-  year={2020},
-  organization={IEEE}
-}
+pip install autoclip
+```
+and the `autoclip` package will be installed in your currently active enviroment.
+
+## Torch API
+
+Below are some examples how to use `autoclip`'s torch API.
+
+### Creating a clipper
+```python
+import torch
+from autoclip.torch import QuantileClip
+
+model = torch.nn.Sequential(
+    torch.nn.Linear(100, 50),
+    torch.nn.ReLU(),
+    torch.nn.Linear(50, 10),
+    torch.nn.ReLU(),
+    torch.nn.Linear(10, 2),
+    torch.nn.Tanh()
+)
+
+clipper = QuantileClip(model.parameters(), quantile=0.9, history_length=1000)
 ```
 
+### During Training
+To clip the model's gradients, simply run the clipper's `.step()` function during your training loop. Note that you should call the clipper's `step` before you call your optimizer's `step`. Calling it after would mean that your clipping will have no effect, since the model will have already been updated using the unclipped gradients. For example:
+```python
+for batch_num, batch in enumerate(training_dataset):
+    model_prediction = model(batch['data'])
+    loss = loss_function(model_prediction, batch['targets'])
+    loss.backward()
+    clipper.step() # clipper comes before optimizer
+    optimizer.step()
+```
 
-## Training dynamics
+### Global vs Local Clipping
+`autoclip`'s torch clippers support two clipping modes. The first is `global_clipping`, which is the original AutoClip as described in Seetherman et al. The second is local or parameter-wise clipping. In this mode a history is kept for every parameter, and each is clipped according to its own history. By default, the `autoclip` clippers will use the parameter-wise clipping.
+To use the global mode, simply pass the appropriate flag:
+```python
+clipper = QuantileClip(model.parameters(), quantile=0.9, history_length=1000, global_clipping=True)
+```
 
-### Mask-inference loss
+### Checkpointing
+The torch clippers also support checkpointing through `state_dict()` and `load_state_dict()`, just like torch models and optimizers. For example, if you want to checkpoint a clipper to `clipper.pth`:
+```python
+clipper = QuantileClip(model.parameters())
+torch.save(clipper.state_dict(), 'clipper.pth')
 
-![](images/mi.gif)
+# Then later
+clipper = QuantileClip(model.parameters())
+clipper.load_state_dict(torch.load('clipper.pth'))
+```
+Keep in mind that just like a torch optimizer this will error if you give the clipper differently sized model parameters.
 
-### Whitened K-Means loss
+## Tensorflow
+`autoclip`'s tensorflow API does not currently have feature parity with the torch API (If you want to change this, feel free to [contribute](#2)).
+The tensorflow API currently only supports the original AutoClip algorithm, and does not support checkpointing. Below is a short example:
+```python
+import tensorflow as tf
+from autoclip.tf import QuantileClip
 
-![](images/wkm.gif)
-
-Training dynamics of a smaller mask inference network (2 BLSTM layers with 300 hidden units) with mask-inference loss and whitened k-means loss, with and without AutoClip. The top left figure shows the norm of the step size taken on the model parameters. The top right figure shows the training loss over time, showing that AutoClip leads to better optimization. The bottom figures show the relationship between gradient norm and a measure of smoothness along the training trajectory. Statistics were recorded every 20 iterations during training.  With AutoClip, we observe a stronger correlation (r-value of .86), compared to without (r-value of .62). All gradients to the right of the dashed black line in the bottom right plot are clipped. We show the location of the AutoClip threshold at the end of training. The threshold changes during training.
+model = tf.keras.models.Sequential(
+    [
+        tf.keras.layers.Dense(50),
+        tf.keras.layers.ReLU(),
+        tf.keras.layers.Dense(10),
+        tf.keras.layers.ReLU(),
+        tf.keras.layers.Dense(
+            2,
+            activation=tf.keras.activations.tanh
+        ),
+    ]
+)
+model.compile(
+    optimizer=tf.keras.optimizers.Adam(
+        learning_rate=0.001,
+        gradient_transformers=[
+            QuantileClip(
+                quantile=0.9,
+                history_length=1000
+            )
+        ]
+    ),
+    loss="mean_absolute_error",
+    metrics=["accuracy"],
+)
+model.fit(train_data, train_targets)
+```
