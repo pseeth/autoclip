@@ -69,7 +69,7 @@ clipper.load_state_dict(torch.load('clipper.pth'))
 Keep in mind that just like a torch optimizer this will error if you give the clipper differently sized model parameters.
 
 ## Tensorflow
-`autoclip`'s tensorflow API does not currently have feature parity with the torch API (If you want to change this, feel free to [contribute](#2)).
+`autoclip`'s tensorflow API does not currently have feature parity with the torch API (If you want to change this, feel free to [contribute](/issues/2)).
 As it is, the tensorflow API currently only supports the original AutoClip algorithm, and does not support checkpointing. Below is a short example:
 ```python
 import tensorflow as tf
