@@ -8,20 +8,20 @@ class StandardClip(Clipper):
     def __init__(
         self,
         parameters: Iterator[torch.nn.parameter.Parameter],
-        clip_deviations: float = 2.0,
+        deviations: float = 2.0,
         history_length: int = 1000,
         global_threshold: bool = False,
     ) -> None:
         self.global_threshold = global_threshold
-        self.global_clip_deviations = None
+        self.global_deviations = None
         self.global_history_length = None
         if self.global_threshold:
-            self.global_clip_deviations = clip_deviations
+            self.global_deviations = deviations
             self.global_history_length = history_length
 
         super().__init__(
             parameters,
-            {"clip_deviations": clip_deviations, "history_length": history_length},
+            {"deviations": deviations, "history_length": history_length},
         )
 
     def step(self) -> None:
@@ -32,7 +32,7 @@ class StandardClip(Clipper):
 
     def _clip_local(self):
         for parameter_group in self.parameter_groups:
-            group_clip_deviations = parameter_group["clip_deviations"]
+            group_deviations = parameter_group["deviations"]
             group_history_length = parameter_group["history_length"]
 
             for parameter in parameter_group["params"]:
@@ -45,7 +45,7 @@ class StandardClip(Clipper):
                     threshold = torch.inf
                 else:
                     std = torch.std(state["history"])
-                    threshold = std * group_clip_deviations
+                    threshold = std * group_deviations
                 new_grad_norm = torch.nn.utils.clip_grad_norm(
                     parameter, max_norm=threshold
                 )
@@ -64,7 +64,7 @@ class StandardClip(Clipper):
             threshold = torch.inf
         else:
             std = torch.std(self.state["global_history"])
-            threshold = std * self.global_clip_deviations
+            threshold = std * self.global_deviations
         new_grad_norm = torch.nn.utils.clip_grad_norm(parameters, max_norm=threshold)
         self.state["global_history"] = torch.hstack(
             (self.state["global_history"], new_grad_norm)
@@ -73,12 +73,12 @@ class StandardClip(Clipper):
     def add_param_group(
         self,
         parameter_group: Dict[str, Union[torch.Tensor, List[torch.Tensor]]],
-        clip_deviations: float = None,
+        deviations: float = None,
         history_length: int = None,
     ) -> None:
         parameter_group_args = {}
-        if clip_deviations is not None:
-            parameter_group_args["clip_deviations"] = clip_deviations
+        if deviations is not None:
+            parameter_group_args["deviations"] = deviations
         if history_length is not None:
             parameter_group_args["history_length"] = history_length
         return super().add_param_group(parameter_group, **parameter_group_args)
