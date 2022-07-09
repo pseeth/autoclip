@@ -1,4 +1,4 @@
-from typing import Iterator, Dict, Union, Any, List
+from typing import Iterator, Dict, Mapping, Union, Any, List
 
 import torch
 from copy import deepcopy
@@ -123,7 +123,8 @@ class Clipper:
             param_group (dict): Specifies what Tensors should be optimized along with group
             specific optimization options.
         """
-        assert isinstance(parameter_group, dict), "param_group must be a dict"
+        if not isinstance(parameter_group, Mapping):
+            parameter_group = {"params": parameter_group}
 
         parameters = parameter_group["params"]
         if isinstance(parameters, torch.Tensor):
@@ -169,3 +170,14 @@ class Clipper:
             )
 
         self.parameter_groups.append(parameter_group)
+
+    def __repr__(self):
+        format_string = self.__class__.__name__ + " ("
+        for i, group in enumerate(self.parameter_groups):
+            format_string += "\n"
+            format_string += "Parameter Group {0}\n".format(i)
+            for key in sorted(group.keys()):
+                if key != "params":
+                    format_string += "    {0}: {1}\n".format(key, group[key])
+        format_string += ")"
+        return format_string
