@@ -1,4 +1,3 @@
-# TODO add the setup stuff
 import os
 from setuptools import setup, find_packages
 
@@ -17,7 +16,4 @@ if __name__ == "__main__":
         author_email="tannersims@hesitantlyhuman.com",
         license="MIT",
         packages=find_packages(),
-        install_requires=[
-            # TODO
-        ],
     )
