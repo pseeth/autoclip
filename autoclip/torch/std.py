@@ -1,7 +1,7 @@
 from typing import Iterator, List, Dict, Union
 import torch
 
-from autoclip.torch.base import Clipper
+from autoclip.torch.clipper import Clipper
 
 
 class StandardClip(Clipper):
