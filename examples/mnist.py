@@ -130,7 +130,7 @@ def main():
     )
     clipper = QuantileClip(
         model.parameters(),
-        clip_quantile=0.8,
+        quantile=0.8,
         history_length=1000,
     )
     scheduler = torch.optim.lr_scheduler.OneCycleLR(
