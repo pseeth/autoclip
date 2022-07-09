@@ -42,7 +42,7 @@ def train(
     model: nn.Module,
     train_loader: torch.utils.data.DataLoader,
     optimizer: torch.optim.Optimizer,
-    clipper: autoclip.torch.Clipper,
+    clipper: autoclip.torch.clipper.Clipper,
     lr_scheduler: torch.optim.lr_scheduler._LRScheduler,
     epoch: int,
     device: torch.device = torch.device("cuda"),
