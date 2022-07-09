@@ -156,7 +156,5 @@ def main():
     torch.save(model.state_dict(), "mnist_cnn.pth")
 
 
-torch.cuda.amp.grad_scaler.GradScaler
-
 if __name__ == "__main__":
     main()
