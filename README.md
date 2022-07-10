@@ -53,7 +53,12 @@ for batch_num, batch in enumerate(training_dataset):
 `autoclip`'s torch clippers support two clipping modes. The first is `global_clipping`, which is the original AutoClip as described in Seetherman et al. The second is local or parameter-wise clipping. In this mode a history is kept for every parameter, and each is clipped according to its own history. By default, the `autoclip` clippers will use the parameter-wise clipping.
 To use the global mode, simply pass the appropriate flag:
 ```python
-clipper = QuantileClip(model.parameters(), quantile=0.9, history_length=1000, global_clipping=True)
+clipper = QuantileClip(
+    model.parameters(),
+    quantile=0.9,
+    history_length=1000,
+    global_clipping=True
+)
 ```
 
 ### Checkpointing
