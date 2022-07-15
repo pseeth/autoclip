@@ -1,4 +1,4 @@
-from typing import Iterator, Dict, Mapping, Union, Any, List
+from typing import Iterator, Iterable, Dict, Mapping, Union, Any, List
 
 import torch
 from copy import deepcopy
@@ -21,7 +21,7 @@ class Clipper:
         self.defaults = defaults
         self.state = defaultdict(dict)
 
-        if not isinstance(parameters, Iterator):
+        if not isinstance(parameters, (Iterator, Iterable)):
             raise TypeError(
                 "parameters argument given to the clipper should be "
                 "an iterable of Tensors or dicts, but instead got "
@@ -38,6 +38,18 @@ class Clipper:
 
         for parameter_group in parameter_groups:
             self.add_param_group(parameter_group=parameter_group)
+
+    @classmethod
+    def as_optimizer(
+        cls: "Clipper",
+        optimizer: torch.optim.Optimizer,
+        **kwargs,
+    ) -> "OptimizerWithClipping":
+        parameters = chain.from_iterable(
+            [parameter_group["params"] for parameter_group in optimizer.param_groups]
+        )
+        clipper = cls(parameters=parameters, **kwargs)
+        return OptimizerWithClipping(optimizer=optimizer, clipper=clipper)
 
     def step(self) -> None:
         raise NotImplementedError
@@ -181,3 +193,38 @@ class Clipper:
                     format_string += "    {0}: {1}\n".format(key, group[key])
         format_string += ")"
         return format_string
+
+
+class OptimizerWithClipping(torch.optim.Optimizer):
+    def __init__(self, optimizer: torch.optim.Optimizer, clipper: Clipper) -> None:
+        self.optimizer = optimizer
+        self.clipper = clipper
+
+    def step(self, closure=None):
+        self.clipper.step()
+        self.optimizer.step(closure=closure)
+
+    def add_param_group(
+        self, param_group: Dict[str, Union[torch.Tensor, List[torch.Tensor]]], **kwargs
+    ) -> None:
+        self.optimizer.add_param_group(param_group=param_group)
+        self.clipper.add_param_group(parameter_group=param_group, **kwargs)
+
+    def zero_grad(self, set_to_none: bool = False) -> None:
+        self.optimizer.zero_grad(set_to_none=set_to_none)
+
+    def state_dict(self) -> Dict[str, Any]:
+        return {
+            "optimizer": self.optimizer.state_dict(),
+            "clipper": self.clipper.state_dict(),
+        }
+
+    def load_state_dict(self, state_dict: Dict[str, Any]) -> None:
+        self.optimizer.load_state_dict(state_dict=state_dict["optimizer"])
+        self.clipper.load_state_dict(state_dict=state_dict["clipper"])
+
+    def __repr__(self):
+        raise NotImplementedError
+
+    def __getattr__(self, attr):
+        return getattr(self.optimizer, attr)
