@@ -18,6 +18,7 @@ class Clipper:
         defaults: Dict[str, Any],
     ) -> None:
         self.parameter_groups: List[Dict[str, Any]] = []
+        self.verify_parameter_settings(settings=defaults)
         self.defaults = defaults
         self.state = defaultdict(dict)
 
@@ -50,6 +51,9 @@ class Clipper:
         )
         clipper = cls(parameters=parameters, **kwargs)
         return OptimizerWithClipping(optimizer=optimizer, clipper=clipper)
+
+    def verify_parameter_settings(self, settings: Dict[str, Any]) -> None:
+        raise NotImplementedError
 
     def step(self) -> None:
         raise NotImplementedError
@@ -165,6 +169,7 @@ class Clipper:
         for name, default in self.defaults.items():
             parameter_group.setdefault(name, default)
         parameter_group.update(kwargs)
+        self.verify_parameter_settings(parameter_group)
 
         parameters = parameter_group["params"]
         if len(parameters) != len(set(parameters)):
