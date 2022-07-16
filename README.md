@@ -68,7 +68,12 @@ for batch_num, batch in enumerate(training_dataset):
 `autoclip`'s torch clippers support two clipping modes. The first is `global_clipping`, which is the original AutoClip as described in Seetherman et al. The second is local or parameter-wise clipping. In this mode a history is kept for every parameter, and each is clipped according to its own history. By default, the `autoclip` clippers will use the parameter-wise clipping.
 To use the global mode, simply pass the appropriate flag:
 ```python
-clipper = QuantileClip(model.parameters(), quantile=0.9, history_length=1000, global_clipping=True)
+clipper = QuantileClip(
+    model.parameters(),
+    quantile=0.9,
+    history_length=1000,
+    global_clipping=True
+)
 ```
 
 ### Checkpointing
@@ -84,7 +89,7 @@ clipper.load_state_dict(torch.load('clipper.pth'))
 Keep in mind that just like a torch optimizer this will error if you give the clipper differently sized model parameters.
 
 ## Tensorflow
-`autoclip`'s tensorflow API does not currently have feature parity with the torch API (If you want to change this, feel free to [contribute](#2)).
+`autoclip`'s tensorflow API does not currently have feature parity with the torch API (If you want to change this, feel free to [contribute](https://github.com/HesitantlyHuman/autoclip/issues/2)).
 As it is, the tensorflow API currently only supports the original AutoClip algorithm, and does not support checkpointing. Below is a short example:
 ```python
 import tensorflow as tf
