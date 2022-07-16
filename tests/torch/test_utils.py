@@ -24,7 +24,7 @@ def test_deep_tensor_move_tuples():
     deep_tensor_move(structure, torch.device("cpu"))
 
 
-def test_deep_tesnor_move_tensors():
+def test_deep_tensor_move_tensors():
     structure = torch.rand((1, 2, 1, 6, 3))
     deep_tensor_move(structure, "cpu")
     deep_tensor_move(structure, torch.device("cpu"))
