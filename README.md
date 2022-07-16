@@ -11,7 +11,6 @@ While AutoClip is great as a preventative measure against exploding gradients, i
 
 ## Installation
 
-TODO: Update for alpha version
 AutoClip is listed on pypi. To install AutoClip simply run the following command
 ```
 pip install autoclip
