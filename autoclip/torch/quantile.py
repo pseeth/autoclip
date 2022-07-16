@@ -1,4 +1,4 @@
-from typing import Iterator, List, Dict, Union
+from typing import Iterator, List, Dict, Union, Any
 import torch
 
 from autoclip.torch.clipper import Clipper, OptimizerWithClipping
@@ -39,6 +39,18 @@ class QuantileClip(Clipper):
             global_threshold=global_threshold,
         )
 
+    def verify_parameter_settings(self, settings: Dict[str, Any]) -> None:
+        quantile = settings["quantile"]
+        history_length = settings["history_length"]
+        if not isinstance(quantile, (float, torch.Tensor)):
+            raise TypeError("QuantileClip quantile value must be a float or a tensor.")
+        if not isinstance(history_length, int):
+            raise TypeError("QuantileClip history_length must be an int.")
+        if quantile < 0.0 or quantile > 1.0:
+            raise ValueError("QuantileClip quantile value must be between 0.0 and 1.0.")
+        if history_length <= 0:
+            raise ValueError("QuantileClip history length must be greater than zero.")
+
     def step(self) -> None:
         if self.global_threshold:
             self._clip_global()
@@ -60,7 +72,7 @@ class QuantileClip(Clipper):
                     threshold = torch.inf
                 else:
                     threshold = torch.quantile(state["history"], group_quantile)
-                new_grad_norm = torch.nn.utils.clip_grad_norm(
+                new_grad_norm = torch.nn.utils.clip_grad_norm_(
                     parameter, max_norm=threshold
                 )
                 state["history"] = torch.hstack((state["history"], new_grad_norm))[
@@ -80,7 +92,7 @@ class QuantileClip(Clipper):
             threshold = torch.quantile(
                 self.state["global_history"], self.global_quantile
             )
-        new_grad_norm = torch.nn.utils.clip_grad_norm(parameters, max_norm=threshold)
+        new_grad_norm = torch.nn.utils.clip_grad_norm_(parameters, max_norm=threshold)
         self.state["global_history"] = torch.hstack(
             (self.state["global_history"], new_grad_norm)
         )[-self.global_history_length :]
