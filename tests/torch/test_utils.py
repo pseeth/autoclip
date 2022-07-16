@@ -31,6 +31,14 @@ def test_deep_tensor_move_tensors():
 
 
 def test_deep_tensor_move_non_tensors():
-    structure = {1.0, ["string", {"some-value": torch.rand((6, 7))}]}
+    structure = {
+        "value": 1.0,
+        "list": [
+            "string",
+            {
+                "some-value": torch.rand((6, 7)),
+            },
+        ],
+    }
     deep_tensor_move(structure, "cpu")
     deep_tensor_move(structure, torch.device("cpu"))
