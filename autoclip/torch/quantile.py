@@ -1,7 +1,7 @@
 from typing import Iterator, List, Dict, Union
 import torch
 
-from autoclip.torch.clipper import Clipper
+from autoclip.torch.clipper import Clipper, OptimizerWithClipping
 
 
 class QuantileClip(Clipper):
@@ -22,6 +22,21 @@ class QuantileClip(Clipper):
         super().__init__(
             parameters,
             {"quantile": quantile, "history_length": history_length},
+        )
+
+    @classmethod
+    def as_optimizer(
+        cls: "QuantileClip",
+        optimizer: torch.optim.Optimizer,
+        quantile: float = 0.9,
+        history_length: int = 1000,
+        global_threshold: bool = False,
+    ) -> "OptimizerWithClipping":
+        return super().as_optimizer(
+            optimizer,
+            quantile=quantile,
+            history_length=history_length,
+            global_threshold=global_threshold,
         )
 
     def step(self) -> None:

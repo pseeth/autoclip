@@ -21,7 +21,10 @@ and the `autoclip` package will be installed in your currently active environmen
 
 Below are some examples how to use `autoclip`'s torch API.
 
-### Creating a clipper
+### Clippers as Optimizer Wrappers
+Using the optimizer wrapping pattern is the recommended way to use AutoClip, and `autoclip`'s torch API supports wrapping arbitrary pytorch optimizers. The wrapping pattern allows you to avoid changing your training code when you want to use an AutoClip clipper. This is especially useful if you do not own the training code for whatever reason. (Say for example you are using someone else's Trainer class, as is often the case with frameworks like `huggingface`.)
+
+The following is an example of how to integrate AutoClip into your model training using this pattern:
 ```python
 import torch
 from autoclip.torch import QuantileClip
@@ -29,17 +32,29 @@ from autoclip.torch import QuantileClip
 model = torch.nn.Sequential(
     torch.nn.Linear(100, 50),
     torch.nn.ReLU(),
-    torch.nn.Linear(50, 10),
+    torch.nn.Linear(50, 2)
+)
+
+optimizer = torch.optim.AdamW(model.parameters())
+optimizer = QuantileClip.as_optimizer(optimizer=optimizer, quantile=0.9, history_length=1000)
+```
+Now you can use the optimizer just like you would have before adding the clipper, and the clipping will be applied automatically.
+
+### Raw AutoClip Clippers
+You can still use the clipper manually if you would like. If this is the case, then you would create your clipper like this:
+```python
+import torch
+from autoclip.torch import QuantileClip
+
+model = torch.nn.Sequential(
+    torch.nn.Linear(100, 50),
     torch.nn.ReLU(),
-    torch.nn.Linear(10, 2),
-    torch.nn.Tanh()
+    torch.nn.Linear(50, 2)
 )
 
 clipper = QuantileClip(model.parameters(), quantile=0.9, history_length=1000)
 ```
-
-### During Training
-To clip the model's gradients, simply run the clipper's `.step()` function during your training loop. Note that you should call the clipper's `step` before you call your optimizer's `step`. Calling it after would mean that your clipping will have no effect, since the model will have already been updated using the unclipped gradients. For example:
+Then, to clip the model's gradients, simply run the clipper's `.step()` function during your training loop. Note that you should call the clipper's `step` before you call your optimizer's `step`. Calling it after would mean that your clipping will have no effect, since the model will have already been updated using the unclipped gradients. For example:
 ```python
 for batch_num, batch in enumerate(training_dataset):
     model_prediction = model(batch['data'])

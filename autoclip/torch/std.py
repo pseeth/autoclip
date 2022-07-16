@@ -1,7 +1,7 @@
 from typing import Iterator, List, Dict, Union
 import torch
 
-from autoclip.torch.clipper import Clipper
+from autoclip.torch.clipper import Clipper, OptimizerWithClipping
 
 
 class StandardClip(Clipper):
@@ -22,6 +22,21 @@ class StandardClip(Clipper):
         super().__init__(
             parameters,
             {"deviations": deviations, "history_length": history_length},
+        )
+
+    @classmethod
+    def as_optimizer(
+        cls: "StandardClip",
+        optimizer: torch.optim.Optimizer,
+        deviations: float = 2.0,
+        history_length: int = 1000,
+        global_threshold: bool = False,
+    ) -> "OptimizerWithClipping":
+        return super().as_optimizer(
+            optimizer,
+            deviations=deviations,
+            history_length=history_length,
+            global_threshold=global_threshold,
         )
 
     def step(self) -> None:

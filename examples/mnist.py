@@ -42,7 +42,6 @@ def train(
     model: nn.Module,
     train_loader: torch.utils.data.DataLoader,
     optimizer: torch.optim.Optimizer,
-    clipper: autoclip.torch.clipper.Clipper,
     lr_scheduler: torch.optim.lr_scheduler._LRScheduler,
     epoch: int,
     device: torch.device = torch.device("cuda"),
@@ -55,7 +54,6 @@ def train(
         output = model(data)
         loss = F.nll_loss(output, target)
         loss.backward()
-        clipper.step()
         optimizer.step()
         lr_scheduler.step()
         if batch_idx % log_interval == 0:
@@ -128,8 +126,8 @@ def main():
         lr=config["max_learning_rate"],
         weight_decay=config["weight_decay"],
     )
-    clipper = QuantileClip(
-        model.parameters(),
+    optimizer = QuantileClip.as_optimizer(
+        optimizer=optimizer,
         quantile=0.8,
         history_length=1000,
     )
@@ -145,7 +143,6 @@ def main():
             model=model,
             train_loader=train_loader,
             optimizer=optimizer,
-            clipper=clipper,
             lr_scheduler=scheduler,
             epoch=epoch,
             device=device,

@@ -7,7 +7,7 @@ README_FILE = open(os.path.join(PACKAGE_ROOT, "README.md"), "r").read()
 if __name__ == "__main__":
     setup(
         name="autoclip",
-        version="0.1.0",
+        version="0.2.0",
         description="Smart gradient clippers",
         long_description=README_FILE,
         long_description_content_type="text/markdown",
