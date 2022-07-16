@@ -18,7 +18,7 @@ def deep_tensor_move(
                 for key, value in tensors.items()
             }
         )
-    elif isinstance(tensors, Collection):
+    elif isinstance(tensors, Collection) and not isinstance(tensors, str):
         return type(tensors)(
             [deep_tensor_move(tensors=value, device=device) for value in tensors]
         )
