@@ -224,7 +224,7 @@ class OptimizerWithClipping(torch.optim.Optimizer):
         self.clipper.load_state_dict(state_dict=state_dict["clipper"])
 
     def __repr__(self):
-        raise NotImplementedError
+        return f"OptimizerWithClipping (\n{self.optimizer}\n{self.clipper})"
 
     def __getattr__(self, attr):
         return getattr(self.optimizer, attr)
