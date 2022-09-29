@@ -190,3 +190,14 @@ def test_pickle_optimizer_wrapper():
     buffer.seek(0)
     clipper = torch.load(buffer)
     clipper.optimizer
+
+
+def test_pickle_clipper():
+    import io
+
+    example_model = torch.nn.Linear(10, 1)
+    clipper = QuantileClip(example_model.parameters())
+    buffer = io.BytesIO()
+    torch.save(clipper, buffer)
+    buffer.seek(0)
+    clipper = torch.load(buffer)
