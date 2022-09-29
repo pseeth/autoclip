@@ -220,6 +220,16 @@ class OptimizerWithClipping(torch.optim.Optimizer):
     def zero_grad(self, set_to_none: bool = False) -> None:
         self.optimizer.zero_grad(set_to_none=set_to_none)
 
+    def __getstate__(self):
+        return {
+            "optimizer": self.optimizer,
+            "clipper": self.clipper,
+        }
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        self.optimizer._hook_for_profile()
+
     def state_dict(self) -> Dict[str, Any]:
         """Returns the state dict of the optimizer and clipper as a :class:`dict`.
 

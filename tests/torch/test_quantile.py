@@ -177,3 +177,16 @@ def test_clip_after_state_dict_load():
     loss = loss_fn(prediction, target)
     loss.backward()
     clipper.step()
+
+
+def test_pickle_optimizer_wrapper():
+    import io
+
+    example_model = torch.nn.Linear(10, 1)
+    optimizer = torch.optim.AdamW(example_model.parameters())
+    clipper = QuantileClip.as_optimizer(optimizer=optimizer)
+    buffer = io.BytesIO()
+    torch.save(clipper, buffer)
+    buffer.seek(0)
+    clipper = torch.load(buffer)
+    clipper.optimizer
