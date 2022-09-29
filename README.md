@@ -88,6 +88,8 @@ clipper.load_state_dict(torch.load('clipper.pth'))
 ```
 Keep in mind that just like a torch optimizer this will error if you give the clipper differently sized model parameters.
 
+While it is generally recommended to use `state_dict`s instead (see the [pytorch documentation](https://pytorch.org/tutorials/beginner/saving_loading_models.html#save-load-entire-model) on this subject for more info), you may also use `torch.save` and `torch.load` directly to pickle the entire clipper object.
+
 ## Tensorflow
 `autoclip`'s tensorflow API does not currently have feature parity with the torch API (If you want to change this, feel free to [contribute](https://github.com/HesitantlyHuman/autoclip/issues/2)).
 As it is, the tensorflow API currently only supports the original AutoClip algorithm, and does not support checkpointing. Below is a short example:
