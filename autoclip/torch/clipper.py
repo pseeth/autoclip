@@ -1,4 +1,4 @@
-from typing import Iterator, Iterable, Dict, Mapping, Union, Any, List
+from typing import Callable, Iterator, Iterable, Dict, Mapping, Union, Any, List
 
 import torch
 from copy import deepcopy
@@ -205,9 +205,11 @@ class OptimizerWithClipping(torch.optim.Optimizer):
         self.optimizer = optimizer
         self.clipper = clipper
 
-    def step(self, closure=None):
+    def step(
+        self, closure: Union[Callable[[], float], None] = None
+    ) -> Union[float, None]:
         self.clipper.step()
-        self.optimizer.step(closure=closure)
+        return self.optimizer.step(closure=closure)
 
     def add_param_group(
         self, param_group: Dict[str, Union[torch.Tensor, List[torch.Tensor]]], **kwargs
@@ -219,6 +221,15 @@ class OptimizerWithClipping(torch.optim.Optimizer):
         self.optimizer.zero_grad(set_to_none=set_to_none)
 
     def state_dict(self) -> Dict[str, Any]:
+        """Returns the state dict of the optimizer and clipper as a :class:`dict`.
+
+        It contains two entries:
+
+        * optimizer - a dict holding the optimizer state dict. It will conain both
+            state and param_groups, as described in the :class:`torch.optim.Optimizer` docs.
+        * clipper - a dict holding the clipper state dict. It will contain its ow
+            state and param_groups, as described in the :class:`autoclip.torch.Clipper` docs.
+        """
         return {
             "optimizer": self.optimizer.state_dict(),
             "clipper": self.clipper.state_dict(),
@@ -228,7 +239,7 @@ class OptimizerWithClipping(torch.optim.Optimizer):
         self.optimizer.load_state_dict(state_dict=state_dict["optimizer"])
         self.clipper.load_state_dict(state_dict=state_dict["clipper"])
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"OptimizerWithClipping (\n{self.optimizer}\n{self.clipper})"
 
     def __getattr__(self, attr):
